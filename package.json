@@ -14,25 +14,25 @@
 		"watch": "webpack --watch",
 		"build": "webpack",
 		"build:prod": "webpack --config webpack.prod.js",
-		"build:prod:patch": "npm run _bump-patch && npm run build:prod",
-		"build:prod:minor": "npm run _bump-minor && npm run build:prod",
-		"build:prod:major": "npm run _bump-major && npm run build:prod",
-		"build:npm": "npm run _clean-package && npm run _tsc && npm run _copy-definition-types && npm run _copy-css-html",
-		"publish:npm:patch": "npm run _bump-patch && npm run build:npm npm login && npm publish",
-		"publish:npm:minor": "npm run _bump-minor && npm run build:npm npm login && npm publish",
-		"publish:npm:major": "npm run _bump-major && npm run build:npm npm login && npm publish",
-		"clean": "rm -rf node_modules package-lock.json && npm install",
-		"update": "rm -f package-lock.json && npm update",
-		"version-and-publish": "npm version patch && npm publish",
+		"build:prod:patch": "pnpm run _bump-patch && pnpm run build:prod",
+		"build:prod:minor": "pnpm run _bump-minor && pnpm run build:prod",
+		"build:prod:major": "pnpm run _bump-major && pnpm run build:prod",
+		"build:pnpm": "pnpm run _clean-package && pnpm run _tsc",
+		"publish:pnpm:patch": "pnpm run _bump-patch && pnpm run build:pnpm pnpm login && pnpm publish",
+		"publish:pnpm:minor": "pnpm run _bump-minor && pnpm run build:pnpm pnpm login && pnpm publish",
+		"publish:pnpm:major": "pnpm run _bump-major && pnpm run build:pnpm pnpm login && pnpm publish",
+		"clean": "rm -rf node_modules package-lock.json && pnpm install",
+		"update": "rm -f package-lock.json && pnpm update",
+		"version-and-publish": "pnpm version patch && pnpm publish",
 		"_tsc": "tsc",
-		"_bump-patch": "npm version patch",
-		"_bump-minor": "npm version minor",
-		"_bump-major": "npm version major",
+		"_bump-patch": "pnpm version patch",
+		"_bump-minor": "pnpm version minor",
+		"_bump-major": "pnpm version major",
 		"_clean-package": "rm -rf package && mkdir package"
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "npm run lint"
+			"pre-commit": "pnpm run lint"
 		}
 	},
 	"keywords": [
