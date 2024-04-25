@@ -17,10 +17,10 @@
 		"build:prod:patch": "pnpm run _bump-patch && pnpm run build:prod",
 		"build:prod:minor": "pnpm run _bump-minor && pnpm run build:prod",
 		"build:prod:major": "pnpm run _bump-major && pnpm run build:prod",
-		"build:pnpm": "pnpm run _clean-package && pnpm run _tsc",
-		"publish:pnpm:patch": "pnpm run _bump-patch && pnpm run build:pnpm pnpm login && pnpm publish",
-		"publish:pnpm:minor": "pnpm run _bump-minor && pnpm run build:pnpm pnpm login && pnpm publish",
-		"publish:pnpm:major": "pnpm run _bump-major && pnpm run build:pnpm pnpm login && pnpm publish",
+		"build:npm": "pnpm run _clean-package && pnpm run _tsc && npm run _copy-definition-types",
+		"publish:npm:patch": "pnpm run _bump-patch && pnpm run build:pnpm pnpm login && pnpm publish",
+		"publish:npm:minor": "pnpm run _bump-minor && pnpm run build:pnpm pnpm login && pnpm publish",
+		"publish:npm:major": "pnpm run _bump-major && pnpm run build:pnpm pnpm login && pnpm publish",
 		"clean": "rm -rf node_modules package-lock.json && pnpm install",
 		"update": "rm -f package-lock.json && pnpm update",
 		"version-and-publish": "pnpm version patch && pnpm publish",
@@ -28,7 +28,8 @@
 		"_bump-patch": "pnpm version patch",
 		"_bump-minor": "pnpm version minor",
 		"_bump-major": "pnpm version major",
-		"_clean-package": "rm -rf package && mkdir package"
+		"_clean-package": "rm -rf package && mkdir package",
+		"_copy-definition-types": "./scripts/copyDefinitionTypes.js"
 	},
 	"husky": {
 		"hooks": {

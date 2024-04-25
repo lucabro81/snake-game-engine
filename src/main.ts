@@ -1,7 +1,7 @@
-class SnakeEngine {
-  constructor() {}
+export class SnakeEngine {
+	constructor() {}
 
-  public run() {
-    console.log("I'm runnig!");
-  }
+	public run() {
+		console.log("I'm runnig!");
+	}
 }
