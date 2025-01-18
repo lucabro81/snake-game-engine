@@ -114,7 +114,3 @@ interface Vector2D {
 ## License
 
 ISC
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
