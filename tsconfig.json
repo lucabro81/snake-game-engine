@@ -3,6 +3,7 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationDir": "./dist",
+    "outDir": "dist",
 
     "target": "ES2020",
     "useDefineForClassFields": true,

@@ -7,7 +7,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'SnakeGameEngine',
-      fileName: 'index',
+      fileName: 'main',
       formats: ['es', 'umd']
     },
     sourcemap: true,

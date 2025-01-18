@@ -7,7 +7,8 @@ export class Snake<T> {
   private snake: Vector2D[] = [];
   private food: Vector2D | null = null;
   private direction: Vector2D = { x: 1, y: 0 };
-  private nextDirection: Vector2D = { x: 1, y: 0 };
+  private lastDirection: Vector2D = { x: 1, y: 0 };
+  private directionQueue: Vector2D[] = [];
   private gameLoop: GameLoop;
 
   constructor(
@@ -16,7 +17,7 @@ export class Snake<T> {
     private onGameOver: () => void
   ) {
     this.grid = new Grid(config.width, config.height);
-    this.gameLoop = new GameLoop(config.tickRate, this.update.bind(this));
+    this.gameLoop = new GameLoop(config.tickRate, () => this.update());
     this.initialize();
   }
 
@@ -29,10 +30,21 @@ export class Snake<T> {
   }
 
   setDirection(direction: Vector2D) {
+
+    // Prevent 180-degree turns relative to current direction
+    this.lastDirection = this.directionQueue.length > 0
+      ? this.directionQueue[this.directionQueue.length - 1]
+      : this.direction;
+
     // Prevent 180-degree turns
-    if (this.direction.x + direction.x !== 0 ||
-      this.direction.y + direction.y !== 0) {
-      this.nextDirection = direction;
+    if (this.lastDirection.x + direction.x !== 0 ||
+      this.lastDirection.y + direction.y !== 0) {
+
+      // Only queue if it's different from the last queued direction
+      if (this.directionQueue.length === 0 ||
+        this.directionQueue[this.directionQueue.length - 1] !== direction) {
+        this.directionQueue.push(direction);
+      }
     }
   }
 
@@ -48,7 +60,13 @@ export class Snake<T> {
   }
 
   private update() {
-    this.direction = this.nextDirection;
+
+    // Process next direction from queue
+    if (this.directionQueue.length > 0) {
+      this.direction = this.directionQueue.shift()!;
+    }
+
+    // this.direction = this.nextDirection;
     const head = this.snake[0];
     const newHead: Vector2D = {
       x: head.x + this.direction.x,
