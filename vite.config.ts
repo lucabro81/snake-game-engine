@@ -17,5 +17,10 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
     })
-  ]
+  ],
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+    },
+  },
 });
