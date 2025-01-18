@@ -14,8 +14,10 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc && vite build",
+    "build:prepublish": "KEEP_SOURCE_MAP=true && pnpm build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "publish:dry-run": "pnpm build:prepublish && pnpm publish --dry-run"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",

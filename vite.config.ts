@@ -10,7 +10,7 @@ export default defineConfig({
       fileName: 'main',
       formats: ['es', 'umd']
     },
-    sourcemap: true,
+    sourcemap: process.env.KEEP_SOURCE_MAP === 'true',
     minify: 'esbuild'
   },
   plugins: [
