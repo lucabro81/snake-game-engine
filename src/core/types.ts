@@ -7,7 +7,7 @@ export interface GameConfig {
   width: number;
   height: number;
   tickRate: number;
-  countinuosSpace: boolean;
+  continuousSpace: boolean;
 }
 
 export interface RenderConfig<T> {

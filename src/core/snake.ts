@@ -11,7 +11,8 @@ export class Snake<T> {
   private gameLoop: GameLoop;
   private letSnakeGrow = false;
   private lastFoodRendered?: T;
-  private countinuosSpace = false;
+  private continuousSpace = false;
+
   get lastDirection(): Vector2D {
     return this.directionQueue?.[this.directionQueue.length - 1] ?? this.direction
   }
@@ -25,7 +26,7 @@ export class Snake<T> {
     private renderConfig: RenderConfig<T>,
     private onGameOver: () => void
   ) {
-    this.countinuosSpace = config.countinuosSpace;
+    this.continuousSpace = config.continuousSpace;
     this.grid = new Grid(config.width, config.height);
     this.gameLoop = new GameLoop(config.tickRate, () => this.update());
     this.initialize();
@@ -67,9 +68,8 @@ export class Snake<T> {
   }
 
   private nextDirection(): Vector2D {
-    return this.directionQueue.length > 0
-      ? this.directionQueue.shift()!
-      : this.direction;
+    const nextDir = this.directionQueue.shift();
+    return nextDir ?? this.direction;
   }
 
   private getNewHead(): Vector2D {
@@ -125,7 +125,7 @@ export class Snake<T> {
     this.letSnakeGrow = false;
 
     if (!this.grid.isInBounds(newHead)) {
-      if (!this.countinuosSpace) {
+      if (!this.continuousSpace) {
         this.onGameOver();
         return;
       }
@@ -133,7 +133,6 @@ export class Snake<T> {
         newHead = this.travelHyperspace(newHead);
       }
     }
-
 
     if (this.isSnakeCollision(newHead)) {
       this.onGameOver();
@@ -161,12 +160,12 @@ export class Snake<T> {
   }
 
   private spawnFood() {
-    do {
-      this.food = {
-        x: Math.floor(Math.random() * this.config.width),
-        y: Math.floor(Math.random() * this.config.height)
-      };
-    } while (this.isSnakeCollision(this.food));
+
+    const l = this.grid.positionsEmpty.length;
+    const randomIndex = this.randomInt(0, l - 1);
+    const randomPosition = this.grid.positionsEmpty[randomIndex];
+
+    this.food = this.toVector2D(randomPosition);
 
     const lastFoodRendered = this.renderConfig.foodRenderer(this.food);
     if (lastFoodRendered) {
@@ -174,5 +173,14 @@ export class Snake<T> {
     }
 
     return lastFoodRendered;
+  }
+
+  private randomInt(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  toVector2D(position: string): Vector2D {
+    const [x, y] = position.split(',').map(Number);
+    return { x, y };
   }
 }
