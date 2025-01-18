@@ -1,3 +1,4 @@
+import { randomInt, toVector2D } from "@/utils";
 import { GameLoop } from "./game-loop";
 import { Grid } from "./grid";
 import { Vector2D, GameConfig, RenderConfig } from "./types";
@@ -141,7 +142,6 @@ export class Snake<T> {
 
     this.moveSnakeForward(newHead);
 
-    // Check food collision
     if (this.thereIsAFoodCollision(newHead)) {
       this.removeOldFood(this.lastFoodRendered);
       this.lastFoodRendered = this.spawnFood();
@@ -162,10 +162,10 @@ export class Snake<T> {
   private spawnFood() {
 
     const l = this.grid.positionsEmpty.length;
-    const randomIndex = this.randomInt(0, l - 1);
+    const randomIndex = randomInt(0, l - 1);
     const randomPosition = this.grid.positionsEmpty[randomIndex];
 
-    this.food = this.toVector2D(randomPosition);
+    this.food = toVector2D(randomPosition);
 
     const lastFoodRendered = this.renderConfig.foodRenderer(this.food);
     if (lastFoodRendered) {
@@ -175,12 +175,4 @@ export class Snake<T> {
     return lastFoodRendered;
   }
 
-  private randomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  toVector2D(position: string): Vector2D {
-    const [x, y] = position.split(',').map(Number);
-    return { x, y };
-  }
 }

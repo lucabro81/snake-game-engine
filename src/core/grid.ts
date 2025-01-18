@@ -2,7 +2,6 @@ import { Vector2D } from "./types";
 
 export class Grid<T> {
   private grid: Map<string, T>;
-  private positionsGridDict: Record<string, boolean> = {};
   public positionsEmpty: string[] = [];
 
   constructor(private width: number, private height: number) {
@@ -12,7 +11,6 @@ export class Grid<T> {
 
   set(position: Vector2D, value: T) {
     this.grid.set(this.getKey(position), value);
-    this.positionsGridDict[this.getKey(position)] = true;
     this.positionsEmpty = this.positionsEmpty.filter(pos => pos !== this.getKey(position));
   }
 
@@ -22,8 +20,7 @@ export class Grid<T> {
 
   clear(position: Vector2D) {
     this.grid.delete(this.getKey(position));
-    this.positionsGridDict[this.getKey(position)] = false;
-    this.positionsEmpty = this.positionsEmpty.filter(pos => pos !== this.getKey(position));
+    this.positionsEmpty.push(this.getKey(position));
   }
 
   isInBounds(position: Vector2D): boolean {
@@ -36,15 +33,10 @@ export class Grid<T> {
   }
 
   private initializePositionsGridDict() {
-    this.positionsGridDict = {};
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        this.positionsGridDict[`${x},${y}`] = false;
+        this.positionsEmpty.push(`${x},${y}`);
       }
-    }
-
-    for (const position in this.positionsGridDict) {
-      this.positionsEmpty.push(position);
     }
   }
 }
