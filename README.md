@@ -11,6 +11,7 @@ pnpm add snake-game-engine
 ## Features
 
 - Flexible rendering system - bring your own renderer
+- Customizable score system
 - TypeScript support out of the box
 
 ## Basic Usage
@@ -24,6 +25,14 @@ const gameConfig = {
   height: 20, // Grid height
   tickRate: 10, // Updates per second
   continuousSpace: false, // If true, snake wraps around edges
+  scoreConfig: {
+    foodMultiplier: 10,
+    movementMultiplier: 1,
+    useSnakeLength: true,
+    onScoreUpdate: (score) => {
+      console.log("Score updated:", score);
+    },
+  },
 };
 
 // Define how to render snake and food
