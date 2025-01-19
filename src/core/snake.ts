@@ -13,6 +13,8 @@ export class Snake<T> {
   private letSnakeGrow = false;
   private lastFoodRendered?: T;
   private continuousSpace = false;
+  private score = 0;
+
 
   get lastDirection(): Vector2D {
     return this.directionQueue?.[this.directionQueue.length - 1] ?? this.direction
@@ -25,7 +27,7 @@ export class Snake<T> {
   constructor(
     private config: GameConfig,
     private renderConfig: RenderConfig<T>,
-    private onGameOver: () => void
+    private onGameOver: () => void,
   ) {
     this.continuousSpace = config.continuousSpace;
     this.grid = new Grid(config.width, config.height);
@@ -146,6 +148,10 @@ export class Snake<T> {
       this.removeOldFood(this.lastFoodRendered);
       this.lastFoodRendered = this.spawnFood();
       this.letSnakeGrow = true;
+      this.updateScore(10 * this.snake.length, true);
+    }
+    else {
+      this.updateScore(-this.snake.length);
     }
   }
 
@@ -174,5 +180,40 @@ export class Snake<T> {
 
     return lastFoodRendered;
   }
+
+  private calculatePoints(isFoodCollision: boolean): number {
+    const { scoreConfig } = this.config;
+    const basePoints = isFoodCollision ?
+      scoreConfig.foodMultiplier :
+      scoreConfig.movementMultiplier;
+
+    if (scoreConfig.useSnakeLength) {
+      return basePoints * this.snake.length;
+    }
+
+    return basePoints;
+  }
+
+  private updateScore(points: number, isFoodCollision = false) {
+    const { scoreConfig } = this.config;
+
+    let newScore: number;
+
+    if (scoreConfig.calculateScore) {
+      newScore = scoreConfig.calculateScore(
+        this.score,
+        points,
+        isFoodCollision,
+        this.snake.length
+      );
+    } else {
+      const calculatedPoints = this.calculatePoints(isFoodCollision);
+      newScore = Math.max(0, this.score + calculatedPoints);
+    }
+
+    this.score = newScore;
+    scoreConfig.onScoreUpdate?.(this.score)
+  }
+
 
 }
