@@ -19,10 +19,8 @@
     "dev": "tsc --watch",
     "build": "tsc && vite build",
     "build:prepublish": "KEEP_SOURCE_MAP=true && pnpm build",
-    "publish:dry-run": "pnpm build:prepublish && pnpm publish --patch --dry-run",
-    "publish:patch": "pnpm build:prepublish && pnpm publish --patch",
-    "publish:minor": "pnpm build:prepublish && pnpm publish --minor",
-    "publish:major": "pnpm build:prepublish && pnpm publish --major"
+    "publish:dry-run": "pnpm build:prepublish && pnpm publish --dry-run",
+    "publish": "pnpm build:prepublish && pnpm publish"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
