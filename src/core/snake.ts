@@ -197,6 +197,8 @@ export class Snake<T> {
   private updateScore(points: number, isFoodCollision = false) {
     const { scoreConfig } = this.config;
 
+    console.log("scoreConfig", scoreConfig)
+
     let newScore: number;
 
     if (scoreConfig.calculateScore) {
