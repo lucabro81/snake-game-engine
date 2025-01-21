@@ -1,12 +1,12 @@
 import { randomInt, toVector2D } from "@/utils";
 import { GameLoop } from "./game-loop";
 import { Grid } from "./grid";
-import { Vector2D, GameConfig, RenderConfig } from "./types";
+import { GameConfig, RenderConfig, Vector2D } from "@/types";
 
 export class Snake<T> {
   private grid: Grid<T>;
   private snake: Vector2D[] = [];
-  private food: Vector2D | null = null;
+  private food: Vector2D = { x: 0, y: 0 };
   private direction: Vector2D = { x: 1, y: 0 };
   private directionQueue: Vector2D[] = [];
   private gameLoop: GameLoop;
@@ -14,7 +14,6 @@ export class Snake<T> {
   private lastFoodRendered?: T;
   private continuousSpace = false;
   private score = 0;
-
 
   get lastDirection(): Vector2D {
     return this.directionQueue?.[this.directionQueue.length - 1] ?? this.direction
