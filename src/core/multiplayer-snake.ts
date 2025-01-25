@@ -19,44 +19,12 @@ export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<Updat
     config: MultiplayerConfig,
     renderConfig: RenderConfig<T>,
     onGameOver: () => void,
-    // private networkEvents: NetworkEvents
   ) {
     const { playerId, isHost, ...baseConfig } = config;
     super(baseConfig, renderConfig, onGameOver);
     this.playerId = playerId;
     this.isHost = isHost;
-    // this.setupNetworkEvents();
   }
-
-  // private setupNetworkEvents() {
-
-  //   // this.networkEvents.onPlayerJoined = (playerId: string) => {
-  //   //   this.otherPlayers.set(playerId, []);
-  //   // };
-
-  //   // this.networkEvents.onPlayerLeft = (playerId: string) => {
-  //   //   const positions = this.otherPlayers.get(playerId) || [];
-  //   //   // Clear other player's snake from the grid
-  //   //   positions.forEach(pos => {
-  //   //     this.grid.clear(pos);
-  //   //   });
-  //   //   this.otherPlayers.delete(playerId);
-  //   // };
-
-  //   // if (this.networkEvents.onSnakeUpdate) {
-  //   //   this.networkEvents.onSnakeUpdate((playerId: string, positions: Vector2D[]) => {
-  //   //     if (playerId !== this.playerId) {
-  //   //       this.updateOtherPlayerSnake(playerId, positions);
-  //   //     }
-  //   //   });
-  //   // }
-
-  //   // if (!this.isHost && this.networkEvents.onFoodUpdate) {
-  //   //   this.networkEvents.onFoodUpdate((food: Vector2D) => {
-  //   //     this.updateFoodPosition(food);
-  //   //   });
-  //   // }
-  // }
 
   onPlayerLeft(playerId: string) {
     const positions = this.otherPlayers.get(playerId) || [];
@@ -93,8 +61,6 @@ export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<Updat
       payload?.food && this.updateFoodPosition(payload?.food);
     }
   }
-
-
 
   protected override update() {
     // Call base class update
