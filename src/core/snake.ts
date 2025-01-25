@@ -4,16 +4,16 @@ import { Grid } from "./grid";
 import { GameConfig, RenderConfig, Vector2D } from "@/types";
 
 export class Snake<T> {
-  private grid: Grid<T>;
-  private snake: Vector2D[] = [];
-  private food: Vector2D = { x: 0, y: 0 };
-  private direction: Vector2D = { x: 1, y: 0 };
-  private directionQueue: Vector2D[] = [];
-  private gameLoop: GameLoop;
-  private letSnakeGrow = false;
-  private lastFoodRendered?: T;
-  private continuousSpace = false;
-  private score = 0;
+  protected grid: Grid<T>;
+  protected snake: Vector2D[] = [];
+  protected food: Vector2D = { x: 0, y: 0 };
+  protected direction: Vector2D = { x: 1, y: 0 };
+  protected directionQueue: Vector2D[] = [];
+  protected gameLoop: GameLoop;
+  protected letSnakeGrow = false;
+  protected lastFoodRendered?: T;
+  protected continuousSpace = false;
+  protected score = 0;
 
   get lastDirection(): Vector2D {
     return this.directionQueue?.[this.directionQueue.length - 1] ?? this.direction
@@ -25,7 +25,7 @@ export class Snake<T> {
 
   constructor(
     private config: GameConfig,
-    private renderConfig: RenderConfig<T>,
+    protected renderConfig: RenderConfig<T>,
     private onGameOver: () => void,
   ) {
     this.continuousSpace = config.continuousSpace;
@@ -115,7 +115,7 @@ export class Snake<T> {
     return this.food && newHead.x === this.food.x && newHead.y === this.food.y
   }
 
-  private update() {
+  protected update() {
 
     this.direction = this.nextDirection();
     let newHead = this.getNewHead();
@@ -154,7 +154,7 @@ export class Snake<T> {
     }
   }
 
-  private isSnakeCollision(position: Vector2D): boolean {
+  protected isSnakeCollision(position: Vector2D): boolean {
     return this.snake.some(segment =>
       segment.x === position.x && segment.y === position.y
     );
@@ -164,7 +164,7 @@ export class Snake<T> {
     this.renderConfig.clearRenderer(lastFoodRendered);
   }
 
-  private spawnFood() {
+  protected spawnFood(): T | undefined {
 
     const l = this.grid.positionsEmpty.length;
     const randomIndex = randomInt(0, l - 1);

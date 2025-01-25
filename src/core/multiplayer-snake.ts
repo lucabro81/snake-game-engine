@@ -2,7 +2,13 @@ import { RenderConfig, Vector2D } from "@/types";
 import { Snake } from "./snake";
 import { MultiplayerConfig, NetworkEvents } from "@/types/multiplayer";
 
-export class MultiplayerSnake<T> extends Snake<T> {
+type UpdateType = 'snake' | 'food';
+type PayloadType = {
+  positions?: Vector2D[];
+  food?: Vector2D;
+};
+
+export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<UpdateType, PayloadType> {
   private readonly playerId: string;
   private readonly isHost: boolean;
   private otherPlayers: Map<string, Vector2D[]> = new Map();
@@ -13,60 +19,93 @@ export class MultiplayerSnake<T> extends Snake<T> {
     config: MultiplayerConfig,
     renderConfig: RenderConfig<T>,
     onGameOver: () => void,
-    private networkEvents: NetworkEvents
+    // private networkEvents: NetworkEvents
   ) {
     const { playerId, isHost, ...baseConfig } = config;
     super(baseConfig, renderConfig, onGameOver);
     this.playerId = playerId;
     this.isHost = isHost;
-    this.setupNetworkEvents();
+    // this.setupNetworkEvents();
   }
 
-  private setupNetworkEvents() {
-    if (this.networkEvents.onPlayerJoined) {
-      this.networkEvents.onPlayerJoined((playerId: string) => {
-        this.otherPlayers.set(playerId, []);
-      });
+  // private setupNetworkEvents() {
+
+  //   // this.networkEvents.onPlayerJoined = (playerId: string) => {
+  //   //   this.otherPlayers.set(playerId, []);
+  //   // };
+
+  //   // this.networkEvents.onPlayerLeft = (playerId: string) => {
+  //   //   const positions = this.otherPlayers.get(playerId) || [];
+  //   //   // Clear other player's snake from the grid
+  //   //   positions.forEach(pos => {
+  //   //     this.grid.clear(pos);
+  //   //   });
+  //   //   this.otherPlayers.delete(playerId);
+  //   // };
+
+  //   // if (this.networkEvents.onSnakeUpdate) {
+  //   //   this.networkEvents.onSnakeUpdate((playerId: string, positions: Vector2D[]) => {
+  //   //     if (playerId !== this.playerId) {
+  //   //       this.updateOtherPlayerSnake(playerId, positions);
+  //   //     }
+  //   //   });
+  //   // }
+
+  //   // if (!this.isHost && this.networkEvents.onFoodUpdate) {
+  //   //   this.networkEvents.onFoodUpdate((food: Vector2D) => {
+  //   //     this.updateFoodPosition(food);
+  //   //   });
+  //   // }
+  // }
+
+  onPlayerLeft(playerId: string) {
+    const positions = this.otherPlayers.get(playerId) || [];
+    // Clear other player's snake from the grid
+    positions.forEach(pos => {
+      this.grid.clear(pos);
+    });
+    this.otherPlayers.delete(playerId);
+  }
+
+  onPlayerJoined(playerId: string) {
+    this.otherPlayers.set(playerId, []);
+  }
+
+  onReceivedUpdate(type: UpdateType, playerId: string, payload: PayloadType) {
+    if (type === 'snake') {
+      if (playerId !== this.playerId) {
+        payload?.positions && this.updateOtherPlayerSnake(playerId, payload?.positions);
+      }
+      return;
     }
 
-    if (this.networkEvents.onPlayerLeft) {
-      this.networkEvents.onPlayerLeft((playerId: string) => {
-        const positions = this.otherPlayers.get(playerId) || [];
-        // Clear other player's snake from the grid
-        positions.forEach(pos => {
-          this.grid.clear(pos);
-        });
-        this.otherPlayers.delete(playerId);
-      });
-    }
-
-    if (this.networkEvents.onSnakeUpdate) {
-      this.networkEvents.onSnakeUpdate((playerId: string, positions: Vector2D[]) => {
-        if (playerId !== this.playerId) {
-          this.updateOtherPlayerSnake(playerId, positions);
-        }
-      });
-    }
-
-    if (!this.isHost && this.networkEvents.onFoodUpdate) {
-      this.networkEvents.onFoodUpdate((food: Vector2D) => {
-        this.updateFoodPosition(food);
-      });
+    if (type === 'food') {
+      payload?.food && this.updateFoodPosition(payload?.food);
+      return;
     }
   }
+
+  onBroadcastUpdate(type: UpdateType, playerId: string, payload: PayloadType) {
+    if (type === 'snake') {
+      payload?.positions && this.updateOtherPlayerSnake(playerId, payload?.positions);
+    }
+    if (type === 'food') {
+      payload?.food && this.updateFoodPosition(payload?.food);
+    }
+  }
+
+
 
   protected override update() {
     // Call base class update
     super.update();
 
     // Broadcast local snake state after update
-    if (this.networkEvents.broadcastSnakeUpdate) {
-      this.networkEvents.broadcastSnakeUpdate(this.playerId, [...this.snake]);
-    }
+    this.onBroadcastUpdate('snake', this.playerId, { positions: [...this.snake] });
 
     // If host, broadcast food position
-    if (this.isHost && this.food && this.networkEvents.broadcastFoodUpdate) {
-      this.networkEvents.broadcastFoodUpdate(this.food);
+    if (this.isHost && this.food) {
+      this.onBroadcastUpdate('food', this.playerId, { food: this.food });
     }
   }
 
@@ -91,6 +130,7 @@ export class MultiplayerSnake<T> extends Snake<T> {
     }
     return super.spawnFood();
   }
+
 
   private updateOtherPlayerSnake(playerId: string, positions: Vector2D[]) {
     const oldPositions = this.otherPlayers.get(playerId) || [];
@@ -127,8 +167,6 @@ export class MultiplayerSnake<T> extends Snake<T> {
   // Override setDirection to broadcast direction changes
   public override setDirection(direction: Vector2D) {
     super.setDirection(direction);
-    if (this.networkEvents.broadcastSnakeUpdate) {
-      this.networkEvents.broadcastSnakeUpdate(this.playerId, [...this.snake]);
-    }
+    this.onBroadcastUpdate('snake', this.playerId, { positions: [...this.snake] });
   }
 }
