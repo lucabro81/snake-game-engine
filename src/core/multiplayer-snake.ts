@@ -63,40 +63,38 @@ export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<Updat
   }
 
   protected override update() {
-    // Call base class update
     super.update();
 
-    // Broadcast local snake state after update
     this.onBroadcastUpdate('snake', this.playerId, { positions: [...this.snake] });
 
-    // If host, broadcast food position
     if (this.isHost && this.food) {
       this.onBroadcastUpdate('food', this.playerId, { food: this.food });
     }
   }
 
   protected override isSnakeCollision(position: Vector2D): boolean {
-    // Check collision with own snake
     if (super.isSnakeCollision(position)) {
       return true;
     }
 
-    // Check collision with other players' snakes
+    return this.areThereCollisionsBetweenSnakes(position);
+  }
+
+  protected override spawnFood() {
+    if (!this.isHost) {
+      // Return the current food position if not host
+      return this.food as T;
+    }
+    return super.spawnFood();
+  }
+
+  private areThereCollisionsBetweenSnakes(position: Vector2D) {
     return Array.from(this.otherPlayers.values()).some(snake =>
       snake.some(segment =>
         segment.x === position.x && segment.y === position.y
       )
     );
   }
-
-  protected override spawnFood(): T | undefined {
-    // Only host can spawn food
-    if (!this.isHost) {
-      return undefined;
-    }
-    return super.spawnFood();
-  }
-
 
   private updateOtherPlayerSnake(playerId: string, positions: Vector2D[]) {
     const oldPositions = this.otherPlayers.get(playerId) || [];

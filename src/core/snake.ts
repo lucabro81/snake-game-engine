@@ -164,7 +164,7 @@ export class Snake<T> {
     this.renderConfig.clearRenderer(lastFoodRendered);
   }
 
-  protected spawnFood(): T | undefined {
+  protected spawnFood() {
 
     const l = this.grid.positionsEmpty.length;
     const randomIndex = randomInt(0, l - 1);
