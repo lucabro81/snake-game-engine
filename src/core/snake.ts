@@ -24,9 +24,9 @@ export class Snake<T> {
   }
 
   constructor(
-    private config: GameConfig,
+    protected config: GameConfig,
     protected renderConfig: RenderConfig<T>,
-    private onGameOver: () => void,
+    protected onGameOver: () => void,
   ) {
     this.continuousSpace = config.continuousSpace;
     this.grid = new Grid(config.width, config.height);
@@ -49,10 +49,9 @@ export class Snake<T> {
   }
 
   private initialize() {
-    // Initial snake position
     const startPos = {
-      x: Math.floor(this.config.width / 4),
-      y: Math.floor(this.config.height / 2)
+      x: Math.floor(randomInt(0, this.config.width)),
+      y: Math.floor(randomInt(0, this.config.height))
     };
     this.snake = [startPos];
     this.grid.set(startPos, this.renderConfig.snakeRenderer(startPos));

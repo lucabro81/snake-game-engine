@@ -1,6 +1,6 @@
 import { Vector2D } from "@/types";
 
-export type UpdateType = 'snake' | 'food';
+export type UpdateType = 'update_snake' | 'snake_updated' | 'food';
 export type PayloadType = {
   positions?: Vector2D[];
   food?: Vector2D;
