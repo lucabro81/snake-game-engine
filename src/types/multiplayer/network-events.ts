@@ -1,3 +1,11 @@
+import { Vector2D } from "@/types";
+
+export type UpdateType = 'snake' | 'food';
+export type PayloadType = {
+  positions?: Vector2D[];
+  food?: Vector2D;
+};
+
 export interface NetworkEvents<UpdateType, PayloadType> {
   onPlayerJoined: (playerId: string) => void;
   onPlayerLeft: (playerId: string) => void;

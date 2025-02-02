@@ -1,12 +1,6 @@
 import { RenderConfig, Vector2D } from "@/types";
 import { Snake } from "./snake";
-import { MultiplayerConfig, NetworkEvents } from "@/types/multiplayer";
-
-type UpdateType = 'snake' | 'food';
-type PayloadType = {
-  positions?: Vector2D[];
-  food?: Vector2D;
-};
+import type { MultiplayerConfig, NetworkEvents, PayloadType, UpdateType } from "@/types/multiplayer";
 
 export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<UpdateType, PayloadType> {
   private readonly playerId: string;
