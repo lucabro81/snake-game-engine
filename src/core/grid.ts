@@ -1,4 +1,4 @@
-import { Vector2D } from "./types";
+import { Vector2D } from "@/types";
 
 export class Grid<T> {
   private grid: Map<string, T>;

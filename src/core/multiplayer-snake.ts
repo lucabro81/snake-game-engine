@@ -12,7 +12,6 @@ export class MultiplayerSnake<T> extends Snake<T> implements NetworkEvents<Updat
   private readonly playerId: string;
   private readonly isHost: boolean;
   private otherPlayers: Map<string, Vector2D[]> = new Map();
-  protected override snake: Vector2D[] = [];
   protected override food: Vector2D = { x: 0, y: 0 };
 
   constructor(
