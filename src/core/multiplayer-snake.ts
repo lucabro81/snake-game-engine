@@ -1,94 +1,154 @@
 import { GameConfig, RenderConfig, Vector2D } from "@/types";
 import { Snake } from "./snake";
 
-interface SnakePlayer {
-  body: Vector2D[];
-  direction: Vector2D;
-  score: number;
+interface Player {
+  id: string;
+  snake: Vector2D[];
+}
+
+interface GameState {
+  players: { id: string, snake: Vector2D[] }[];
+  foodPosition: Vector2D;
+}
+
+interface MultiplayerConfig {
+  onFoodCollected: (data: {
+    collectedBy: string,
+    newFoodPosition: Vector2D
+  }) => void;
+  onPlayerPositionUpdate: (playerId: string, positions: Vector2D[]) => void;
 }
 
 export class MultiplayerSnake<T> extends Snake<T> {
-  private player2: SnakePlayer = {
-    body: [],
-    direction: { x: -1, y: 0 }, // Start moving left
-    score: 0
-  };
+  private players: Map<string, Player> = new Map();
+  private playerId: string;
+  private multiplayerConfig: MultiplayerConfig;
 
   constructor(
+    playerId: string,
     config: GameConfig,
     renderConfig: RenderConfig<T>,
+    multiplayerConfig: MultiplayerConfig,
     onGameOver: () => void,
   ) {
     super(config, renderConfig, onGameOver);
-    this.initializeSecondPlayer();
+    this.playerId = playerId;
+    this.multiplayerConfig = multiplayerConfig;
+
+    this.players.set(playerId, {
+      id: playerId,
+      snake: this.snake
+    });
   }
 
-  private initializeSecondPlayer() {
-    const startPos = {
-      x: Math.floor(this.config.width * 0.75), // Start on the right side
-      y: Math.floor(this.config.height * 0.5)
+  receivePlayerUpdate(playerId: string, newPositions: Vector2D[]) {
+    if (playerId !== this.playerId) {
+      this.updatePlayerPosition(playerId, newPositions);
+    }
+  }
+
+  protected handleFoodCollection(newHead: Vector2D) {
+    if (this.thereIsAFoodCollision(newHead)) {
+      this.removeOldFood(this.lastFoodRendered);
+      this.lastFoodRendered = this.spawnFood();
+
+      this.multiplayerConfig.onFoodCollected({
+        collectedBy: this.playerId,
+        newFoodPosition: this.food
+      });
+
+      this.letSnakeGrow = true;
+      this.updateScore(10 * this.snake.length, true);
+    }
+  }
+
+  updateFoodPosition(newPosition: Vector2D) {
+    if (this.lastFoodRendered) {
+      this.removeOldFood(this.lastFoodRendered);
+    }
+    this.food = newPosition;
+    this.lastFoodRendered = this.renderConfig.foodRenderer(this.food);
+    if (this.lastFoodRendered) {
+      this.grid.set(this.food, this.lastFoodRendered);
+    }
+  }
+
+  getPlayerState(): Vector2D[] {
+    return this.snake;
+  }
+
+  getGameState(): GameState {
+    return {
+      players: Array.from(this.players.values()).map(player => ({
+        id: player.id,
+        snake: player.snake
+      })),
+      foodPosition: this.food
     };
-
-    this.player2.body = [startPos];
-    this.grid.set(startPos, this.renderConfig.snakeRenderer(startPos));
   }
 
-  setPlayer2Direction(direction: Vector2D) {
-    if (this.isValidDirectionChange(direction, this.player2.direction)) {
-      this.player2.direction = direction;
+  addPlayer(playerId: string, initialPosition: Vector2D) {
+    if (!this.players.has(playerId)) {
+      const newPlayer: Player = {
+        id: playerId,
+        snake: [initialPosition]
+      };
+
+      this.players.set(playerId, newPlayer);
+      this.grid.set(initialPosition, this.renderConfig.snakeRenderer(initialPosition));
     }
   }
 
-  private isValidDirectionChange(newDir: Vector2D, currentDir: Vector2D): boolean {
-    // Prevent 180-degree turns
-    return (newDir.x + currentDir.x !== 0) || (newDir.y + currentDir.y !== 0);
-  }
+  removePlayer(playerId: string) {
+    const player = this.players.get(playerId);
+    if (player) {
+      player.snake.forEach(position => {
+        const element = this.grid.get(position);
+        if (element) {
+          this.renderConfig.clearRenderer(element);
+          this.grid.clear(position);
+        }
+      });
 
-  protected override update() {
-    // First, update player 1 (using parent class's snake array)
-    super.update();
-
-    // Then update player 2
-    this.updatePlayer2();
-  }
-
-  private updatePlayer2() {
-    // Calculate new head position
-    const head = this.player2.body[0];
-    const newHead = {
-      x: head.x + this.player2.direction.x,
-      y: head.y + this.player2.direction.y
-    };
-
-    // Check for collisions
-    if (!this.grid.isInBounds(newHead) || this.isSnakeCollision(newHead)) {
-      this.onGameOver();
-      return;
-    }
-
-    // Move snake
-    this.player2.body.unshift(newHead);
-    this.grid.set(newHead, this.renderConfig.snakeRenderer(newHead));
-
-    // Remove tail unless growing
-    const tail = this.player2.body.pop();
-    if (tail) {
-      this.grid.clear(tail);
+      this.players.delete(playerId);
     }
   }
 
-  // Override collision check to include both snakes
-  protected override isSnakeCollision(position: Vector2D): boolean {
-    // Check collision with first snake (super.snake contains player 1's body)
-    const player1Collision = super.isSnakeCollision(position);
+  updatePlayerPosition(playerId: string, newPositions: Vector2D[]) {
+    const player = this.players.get(playerId);
+    if (player && playerId !== this.playerId) {
+      player.snake.forEach(position => {
+        const element = this.grid.get(position);
+        if (element) {
+          this.renderConfig.clearRenderer(element);
+          this.grid.clear(position);
+        }
+      });
 
-    // Check collision with second snake
-    const player2Collision = this.player2.body.some(segment =>
-      segment.x === position.x && segment.y === position.y
-    );
+      player.snake = newPositions;
+      newPositions.forEach(position => {
+        this.grid.set(position, this.renderConfig.snakeRenderer(position));
+      });
 
-    return player1Collision || player2Collision;
+      this.multiplayerConfig.onPlayerPositionUpdate(playerId, newPositions);
+    }
   }
 
+  protected isSnakeCollision(position: Vector2D): boolean {
+    if (super.isSnakeCollision(position)) {
+      return true;
+    }
 
+    for (const [id, player] of this.players) {
+      if (id !== this.playerId) {
+        if (player.snake.some(segment =>
+          segment.x === position.x && segment.y === position.y
+        )) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
 }

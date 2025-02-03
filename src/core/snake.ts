@@ -68,19 +68,19 @@ export class Snake<T> {
       this.directionQueue[this.directionQueue.length - 1] !== direction
   }
 
-  private nextDirection(): Vector2D {
+  protected nextDirection(): Vector2D {
     const nextDir = this.directionQueue.shift();
     return nextDir ?? this.direction;
   }
 
-  private getNewHead(): Vector2D {
+  protected getNewHead(): Vector2D {
     return {
       x: this.head.x + this.direction.x,
       y: this.head.y + this.direction.y
     };
   }
 
-  private removeTail() {
+  protected removeTail() {
     const tail = this.snake.pop();
     if (tail) {
       this.renderConfig.clearRenderer(this.grid.get(tail))
@@ -88,7 +88,7 @@ export class Snake<T> {
     }
   }
 
-  private travelHyperspace(newHead: Vector2D): Vector2D {
+  protected travelHyperspace(newHead: Vector2D): Vector2D {
     let clonedNewHead = { ...newHead };
     if (this.direction.x > 0) {
       clonedNewHead.x = newHead.x - this.config.width;
@@ -105,12 +105,12 @@ export class Snake<T> {
     return clonedNewHead;
   }
 
-  private moveSnakeForward(newHead: Vector2D) {
+  protected moveSnakeForward(newHead: Vector2D) {
     this.snake.unshift(newHead);
     this.grid.set(newHead, this.renderConfig.snakeRenderer(newHead));
   }
 
-  private thereIsAFoodCollision(newHead: Vector2D) {
+  protected thereIsAFoodCollision(newHead: Vector2D) {
     return this.food && newHead.x === this.food.x && newHead.y === this.food.y
   }
 
@@ -159,7 +159,7 @@ export class Snake<T> {
     );
   }
 
-  private removeOldFood(lastFoodRendered?: T) {
+  protected removeOldFood(lastFoodRendered?: T) {
     this.renderConfig.clearRenderer(lastFoodRendered);
   }
 
@@ -192,7 +192,7 @@ export class Snake<T> {
     return basePoints;
   }
 
-  private updateScore(points: number, isFoodCollision = false) {
+  protected updateScore(points: number, isFoodCollision = false) {
     const { scoreConfig } = this.config;
 
     let newScore: number;
