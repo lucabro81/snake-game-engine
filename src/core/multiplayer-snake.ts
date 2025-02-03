@@ -1,5 +1,6 @@
 import { GameConfig, RenderConfig, Vector2D } from "@/types";
 import { Snake } from "./snake";
+import { randomInt, toVector2D } from "@/utils";
 
 interface Player {
   id: string;
@@ -17,6 +18,7 @@ interface MultiplayerConfig {
     newFoodPosition: Vector2D
   }) => void;
   onPlayerPositionUpdate: (playerId: string, positions: Vector2D[]) => void;
+  onPlayerDied: (playerId: string, finalPositions: Vector2D[]) => void;
 }
 
 export class MultiplayerSnake<T> extends Snake<T> {
@@ -31,7 +33,13 @@ export class MultiplayerSnake<T> extends Snake<T> {
     multiplayerConfig: MultiplayerConfig,
     onGameOver: () => void,
   ) {
-    super(config, renderConfig, onGameOver);
+    // Create wrapped onGameOver that notifies about death first
+    const wrappedOnGameOver = () => {
+      this.multiplayerConfig.onPlayerDied(this.playerId, this.snake);
+      onGameOver();
+    };
+
+    super(config, renderConfig, wrappedOnGameOver);
     this.playerId = playerId;
     this.multiplayerConfig = multiplayerConfig;
 
@@ -41,25 +49,34 @@ export class MultiplayerSnake<T> extends Snake<T> {
     });
   }
 
+  // Get a random available position from the grid
+  getRandomStartPosition(): Vector2D {
+    const l = this.grid.positionsEmpty.length;
+    if (l === 0) {
+      throw new Error('No empty positions available');
+    }
+    const randomIndex = randomInt(0, l - 1);
+    const randomPosition = this.grid.positionsEmpty[randomIndex];
+    return toVector2D(randomPosition);
+  }
+
   receivePlayerUpdate(playerId: string, newPositions: Vector2D[]) {
     if (playerId !== this.playerId) {
       this.updatePlayerPosition(playerId, newPositions);
     }
   }
 
-  protected handleFoodCollection(newHead: Vector2D) {
-    if (this.thereIsAFoodCollision(newHead)) {
-      this.removeOldFood(this.lastFoodRendered);
-      this.lastFoodRendered = this.spawnFood();
+  protected override thereIsAFoodCollision(newHead: Vector2D): boolean {
+    const collision = super.thereIsAFoodCollision(newHead);
 
+    if (collision) {
       this.multiplayerConfig.onFoodCollected({
         collectedBy: this.playerId,
         newFoodPosition: this.food
       });
-
-      this.letSnakeGrow = true;
-      this.updateScore(10 * this.snake.length, true);
     }
+
+    return collision;
   }
 
   updateFoodPosition(newPosition: Vector2D) {
