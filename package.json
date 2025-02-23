@@ -1,15 +1,27 @@
 {
   "name": "snake-game-engine",
-  "description": "A simple snake game engine",
+  "description": "A versatile and framework-agnostic Snake game engine that supports both single-player and multiplayer modes. Built with TypeScript, it provides a flexible core that can be integrated into any rendering context.",
   "author": "Luca Brognara",
   "license": "ISC",
   "private": false,
-  "version": "1.1.5-multiplayer(0.0.10)",
+  "version": "1.2.0",
   "type": "module",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
   "files": [
     "dist"
+  ],
+  "keywords": [
+    "snake",
+    "game-engine",
+    "multiplayer",
+    "typescript",
+    "game-development",
+    "framework-agnostic",
+    "renderer-agnostic",
+    "game-loop",
+    "collision-detection",
+    "websocket"
   ],
   "repository": {
     "type": "git",

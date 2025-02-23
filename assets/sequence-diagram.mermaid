@@ -1,0 +1,48 @@
+sequenceDiagram
+participant H as Host Client
+participant S as Server
+participant J as Joining Client
+
+    %% Room Creation
+    H->>S: CREATE_ROOM
+    S->>H: ROOM_CREATED {roomId, playerId}
+    Note over H: Setup game instance
+    Note over H: Initialize game board
+
+    %% Room Joining
+    J->>S: JOIN_ROOM {roomId}
+    S->>J: ROOM_JOINED {roomId, playerId}
+    S->>H: REQUEST_GAME_STATE
+    H->>S: GAME_STATE_UPDATE {players, foodPosition}
+    S->>J: GAME_STATE {players, foodPosition}
+
+    S->>H: PLAYER_JOINED {playerId}
+    Note over H,J: Game can start when min players reached
+    S->>H: GAME_CAN_START
+    S->>J: GAME_CAN_START
+
+    Note over H,J: Game starts after short delay
+
+    %% Game Running
+    rect rgb(200, 200, 255)
+    Note over H,J: Continuous game updates
+
+    %% Regular position updates
+    H->>S: PLAYER_POSITION_UPDATE
+    S->>J: PLAYER_POSITION_UPDATE
+    J->>S: PLAYER_POSITION_UPDATE
+    S->>H: PLAYER_POSITION_UPDATE
+
+    %% Food collection sequence
+    Note over H: Host collects food
+    Note over H: nextTick waits for update
+    H->>S: FOOD_COLLECTED {newFoodPosition}
+    S->>J: FOOD_COLLECTED {newFoodPosition}
+    Note over J: Updates food position
+
+    Note over J: Joiner collects food
+    Note over J: nextTick waits for update
+    J->>S: FOOD_COLLECTED {newFoodPosition}
+    S->>H: FOOD_COLLECTED {newFoodPosition}
+    Note over H: Updates food position
+    end

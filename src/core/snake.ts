@@ -114,6 +114,10 @@ export class Snake<T> {
     return this.food && newHead.x === this.food.x && newHead.y === this.food.y
   }
 
+  protected nextTick(): Promise<void> {
+    return this.gameLoop.nextTick();
+  }
+
   protected update() {
 
     this.direction = this.nextDirection();

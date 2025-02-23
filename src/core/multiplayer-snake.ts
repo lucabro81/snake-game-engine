@@ -61,6 +61,7 @@ export class MultiplayerSnake<T> extends Snake<T> {
   }
 
   receivePlayerUpdate(playerId: string, newPositions: Vector2D[]) {
+    // console.log('receivePlayerUpdate', playerId, newPositions);
     if (playerId !== this.playerId) {
       this.updatePlayerPosition(playerId, newPositions);
     }
@@ -70,13 +71,24 @@ export class MultiplayerSnake<T> extends Snake<T> {
     const collision = super.thereIsAFoodCollision(newHead);
 
     if (collision) {
-      this.multiplayerConfig.onFoodCollected({
-        collectedBy: this.playerId,
-        newFoodPosition: this.food
+      this.nextTick().then(() => {
+        this.multiplayerConfig.onFoodCollected({
+          collectedBy: this.playerId,
+          newFoodPosition: this.food
+        });
       });
     }
 
     return collision;
+  }
+
+  protected override update() {
+    super.update();
+
+    // console.log(`[${this.playerId}] Sending position update:`, this.snake);
+
+    // Send our new position to other players after each movement
+    this.multiplayerConfig.onPlayerPositionUpdate(this.playerId, [...this.snake]);
   }
 
   updateFoodPosition(newPosition: Vector2D) {
@@ -95,6 +107,7 @@ export class MultiplayerSnake<T> extends Snake<T> {
   }
 
   getGameState(): GameState {
+    console.log('getGameState', this.food);
     return {
       players: Array.from(this.players.values()).map(player => ({
         id: player.id,
@@ -134,20 +147,10 @@ export class MultiplayerSnake<T> extends Snake<T> {
   updatePlayerPosition(playerId: string, newPositions: Vector2D[]) {
     const player = this.players.get(playerId);
     if (player && playerId !== this.playerId) {
-      player.snake.forEach(position => {
-        const element = this.grid.get(position);
-        if (element) {
-          this.renderConfig.clearRenderer(element);
-          this.grid.clear(position);
-        }
-      });
 
-      player.snake = newPositions;
-      newPositions.forEach(position => {
-        this.grid.set(position, this.renderConfig.snakeRenderer(position));
-      });
+      this.removeOldPlayerPositions(player);
+      this.setNewPlayerPositions(player, newPositions);
 
-      this.multiplayerConfig.onPlayerPositionUpdate(playerId, newPositions);
     }
   }
 
@@ -167,5 +170,22 @@ export class MultiplayerSnake<T> extends Snake<T> {
     }
 
     return false;
+  }
+
+  private removeOldPlayerPositions(player: Player) {
+    player.snake.forEach(position => {
+      const element = this.grid.get(position);
+      if (element) {
+        this.renderConfig.clearRenderer(element);
+        this.grid.clear(position);
+      }
+    });
+  }
+
+  private setNewPlayerPositions(player: Player, newPositions: Vector2D[]) {
+    player.snake = newPositions;
+    newPositions.forEach(position => {
+      this.grid.set(position, this.renderConfig.snakeRenderer(position));
+    });
   }
 }
